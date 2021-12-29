@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/aricciar/OpenFOAM/OpenFOAM-9/src/OpenFOAM/lnInclude",
+                "/home/aricciar/OpenFOAM/OpenFOAM-9/src/finiteVolume/lnInclude",
+                "/home/aricciar/OpenFOAM/OpenFOAM-9/src/meshTools/lnInclude"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

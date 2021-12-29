@@ -1,0 +1,4 @@
+#!/bin/bash
+
+ideasUnvToFoam meshWithFemap/figure712.unv > log.ideasUnvToFoam
+ch7ex3_mmd
