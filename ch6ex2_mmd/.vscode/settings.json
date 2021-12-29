@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "ch6ex2_mmd.C": "cpp",
+        "UList.H": "cpp",
+        "ostream": "cpp"
+    }
+}
