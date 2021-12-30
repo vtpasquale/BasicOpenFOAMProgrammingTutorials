@@ -54,39 +54,10 @@ int main(int argc, char *argv[])
 	// These two create the time system (instance called runTime) and fvMesh (instance called mesh).
     #include "createTime.H"
     #include "createMesh.H"
-    
-    // Hints
-    // https://jibranhaider.com/blog/mesh-information-in-openfoam/
 
     /*---------------------------------------------------------------------------*\
-    (a) Write a program to read the mesh and loop over all boundary patches. Then
-    for each patch print the centroid and normal vector of its faces.
-    \*---------------------------------------------------------------------------*/
-
-    // Loop over boundary patches
-    int faceIndex = 0;
-    forAll(mesh.boundary(), patch)
-    {
-        Info << "Patch name " << mesh.boundary()[patch].name() << endl;            // Boundary patch name
-
-        // Loop over all faces of boundary patch
-        forAll(mesh.boundary()[patch], facei)
-        {
-            faceIndex = mesh.boundary()[patch].start() + facei; // Face index
-            Info << "   Face index " << faceIndex 
-            << " Face centroid " << mesh.faceCentres()[faceIndex]
-            << " Face normal vector" << mesh.Sf()[faceIndex]
-            << endl;
-        }
-    }
-    Info << endl;
-    Info << "End\n" << endl;
-
-    /*---------------------------------------------------------------------------*\
-    (b) Modify the program to define a volumeScalarField T. Set the values for T at
-    element centroids and at the boundaries to 10x2y2, where x and y are the
-    coordinates of the element centroids and for the case of the boundary the
-    centroids of the boundary faces.
+    (c) Write a program to compute the gradient of T and compare its value with the
+    analytical solution.
     \*---------------------------------------------------------------------------*/
     Info<< "Reading field T\n" << endl;
 	volScalarField T
@@ -106,61 +77,65 @@ int main(int argc, char *argv[])
     Info << "volScalarField T = " << endl;
     Info << T << nl << endl;
 
-    Info << "T.internalField().size() = " << T.internalField().size() << endl;
-    Info << "T.boundaryField().size() = " << T.boundaryField().size() << endl;
-
-    // Print T at cells 
-    Info << "T.size() = " << T.size() << endl;
-    forAll(T,i)
-        Info << T[i] << endl;
-    Info << T << nl << endl;
-
-    // Print T at boundaries
-    forAll (mesh.boundaryMesh(), patchI)
-    {
-        Info << "Patch " << patchI << endl;
-        forAll(T.boundaryField()[patchI], faceI)
-        {
-            Info << "    " << T.boundaryField()[patchI][faceI] << endl; 
-        }
-    }
-    Info << nl << endl;
-
     // Update runtime
     Info << runTime.time().value() << endl;
     runTime.loop();
     Info << runTime.time().value() << endl;
     Info << nl << endl;
 
-    // Update T at centroids
+    // compute the gauss gradient of T
+	volVectorField gdT
+	(
+		IOobject
+		(
+		    "gdT",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::NO_READ,
+		    IOobject::AUTO_WRITE
+		),
+        fvc::grad(T)
+	);
+    Info << gdT << endl;
+
+    // Analytic gradient placeholder
+	volVectorField adT
+	(
+		IOobject
+		(
+		    "adT",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::NO_READ,
+		    IOobject::AUTO_WRITE
+		),
+        fvc::grad(T)
+	);
+
+    // compute analytic gradient
     const volVectorField& C = mesh.C(); // Cell center coordinates
-    forAll(T(),i)
-    {
-        T[i] = 10.0*C[i][0]*C[i][0]*C[i][1]*C[i][1];
-        Info << T[i] << endl;
+    forAll(adT,i){
+        adT[i][0]  =  20.*C[i][0] * C[i][1] * C[i][1];
+        adT[i][1]  =  20.*C[i][0] * C[i][0] * C[i][1];
     }
-    
-    // The does not seem to be a set way to update boundary values arbitrarily
-    // So I will use the code to create a new boundary file and start a new case
-    // Update T at boundaries
-    // USE THIS DATA IN NEW BOUNDARY FILE
-    forAll(mesh.boundary(), patch)
-    {
-        Info << "Patch name " << mesh.boundary()[patch].name() << endl;            // Boundary patch name
-        Info << "(" << endl;
+    Info << adT << endl;
 
-        // Loop over all faces of boundary patch
-        forAll(mesh.boundary()[patch], facei)
-        {
-            faceIndex = mesh.boundary()[patch].start() + facei; // Face index
-            Info << 10.0*mesh.Cf()[faceIndex][0]*mesh.Cf()[faceIndex][0]*mesh.Cf()[faceIndex][1]*mesh.Cf()[faceIndex][1] << endl;
-        }
-        Info << ")" << endl;
-    }
+    // Error 
+	volVectorField edT
+	(
+		IOobject
+		(
+		    "edT",
+		    runTime.timeName(),
+		    mesh,
+		    IOobject::NO_READ,
+		    IOobject::AUTO_WRITE
+		),
+        adT - gdT
+	);
+    Info << edT << endl;
 
-    // Internal field values updated. Update boundaries manually.
     runTime.writeNow();
-
     return 0;
 }
 

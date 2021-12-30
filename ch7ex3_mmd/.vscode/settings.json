@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "ch7ex3_mmd.C": "cpp"
+        "ch7ex3_mmd.C": "cpp",
+        "thread": "cpp",
+        "ch7ex3_mmd copy.C": "cpp",
+        "ch7ex3_step2_mmd.C": "cpp",
+        "ostream": "cpp"
     }
 }
